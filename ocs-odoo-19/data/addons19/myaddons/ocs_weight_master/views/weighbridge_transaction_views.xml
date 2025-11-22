@@ -8,6 +8,7 @@
             <form string="Entrance Form">
                 <header>
                     <button name="action_fetch_entrance_weight" string="Fetch Data" type="object" class="btn-secondary" icon="fa-download"/>
+                    <button name="%(action_report_weighbridge_transaction)d" string="Print" type="action" class="btn-primary" icon="fa-print"/>
                 </header>
                 <sheet>
                     <group>
@@ -62,6 +63,7 @@
             <form string="Exit Form">
                 <header>
                     <button name="action_fetch_exit_weight" string="Fetch Data" type="object" class="btn-secondary" icon="fa-download"/>
+                    <button name="%(action_report_weighbridge_transaction)d" string="Print" type="action" class="btn-primary" icon="fa-print"/>
                 </header>
                 <sheet>
                     <group>
@@ -103,6 +105,64 @@
                             <group>
                                 <field name="remark1" readonly="1"/>
                                 <field name="remark2" readonly="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- General Form View (for All Records - no fetch buttons) -->
+    <record id="view_weighbridge_transaction_form" model="ir.ui.view">
+        <field name="name">weighbridge.transaction.form</field>
+        <field name="model">weighbridge.transaction</field>
+        <field name="arch" type="xml">
+            <form string="Weighbridge Transaction" create="0">
+                <header>
+                    <button name="%(action_report_weighbridge_transaction)d" string="Print" type="action" class="btn-primary" icon="fa-print"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="voucher_no"/>
+                            <field name="vehicle_no"/>
+                            <field name="type" widget="radio" options="{'horizontal': true}"/>
+                            <field name="state"/>
+                        </group>
+                        <group>
+                            <field name="entrance_weight"/>
+                            <field name="entrance_date"/>
+                            <field name="exit_weight"/>
+                            <field name="exit_date"/>
+                            <field name="net_weight" string="Different Weight"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Driver Information">
+                            <group>
+                                <field name="driver_name"/>
+                                <field name="driver_nrc"/>
+                                <field name="driver_phone"/>
+                            </group>
+                        </page>
+                        <page string="Company &amp; Responsible">
+                            <group>
+                                <field name="partner_id" domain="[('is_company', '=', True)]"/>
+                                <field name="company_name"/>
+                                <field name="responsible_id"/>
+                            </group>
+                        </page>
+                        <page string="Delivery &amp; Products">
+                            <group>
+                                <field name="deliver_to" placeholder="Enter delivery address"/>
+                                <field name="product_ids" widget="many2many_tags"/>
+                            </group>
+                        </page>
+                        <page string="Remarks">
+                            <group>
+                                <field name="remark1" placeholder="Enter remark 1"/>
+                                <field name="remark2" placeholder="Enter remark 2"/>
                             </group>
                         </page>
                     </notebook>
@@ -159,8 +219,9 @@
         <field name="view_mode">list,form</field>
         <field name="view_ids" eval="[(5, 0, 0),
                                        (0, 0, {'view_mode': 'list', 'view_id': ref('view_weighbridge_transaction_list')}),
-                                       (0, 0, {'view_mode': 'form', 'view_id': ref('view_weighbridge_transaction_entrance_form')})]"/>
+                                       (0, 0, {'view_mode': 'form', 'view_id': ref('view_weighbridge_transaction_form')})]"/>
         <field name="target">current</field>
+        <field name="context">{'create': False}</field>
     </record>
 
     <!-- Menu Items -->
