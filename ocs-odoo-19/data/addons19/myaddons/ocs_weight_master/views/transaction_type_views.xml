@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Transaction Type Form View -->
+    <record id="view_transaction_type_form" model="ir.ui.view">
+        <field name="name">weighbridge.transaction.type.form</field>
+        <field name="model">weighbridge.transaction.type</field>
+        <field name="arch" type="xml">
+            <form string="Transaction Type">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" required="1"/>
+                            <field name="code" required="1" placeholder="e.g., in, out, in_out, visit"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="transaction_count" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="description" placeholder="Enter description for this transaction type"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Transaction Type List View -->
+    <record id="view_transaction_type_list" model="ir.ui.view">
+        <field name="name">weighbridge.transaction.type.list</field>
+        <field name="model">weighbridge.transaction.type</field>
+        <field name="arch" type="xml">
+            <list string="Transaction Types">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="transaction_count"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Transaction Type Search View -->
+    <record id="view_transaction_type_search" model="ir.ui.view">
+        <field name="name">weighbridge.transaction.type.search</field>
+        <field name="model">weighbridge.transaction.type</field>
+        <field name="arch" type="xml">
+            <search string="Search Transaction Types">
+                <field name="name"/>
+                <field name="code"/>
+                <filter string="Active" name="active" domain="[('active', '=', True)]"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Transaction Type Action -->
+    <record id="action_transaction_type" model="ir.actions.act_window">
+        <field name="name">Transaction Types</field>
+        <field name="res_model">weighbridge.transaction.type</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+                                       (0, 0, {'view_mode': 'list', 'view_id': ref('view_transaction_type_list')}),
+                                       (0, 0, {'view_mode': 'form', 'view_id': ref('view_transaction_type_form')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first transaction type!
+            </p>
+            <p>
+                Manage transaction types like In, Out, In-Out, Visit, etc.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Item -->
+    <menuitem id="menu_transaction_type" name="Transaction Types"
+              parent="menu_ocs_weight_root" action="action_transaction_type" sequence="20"/>
+</odoo>
+

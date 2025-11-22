@@ -10,7 +10,10 @@ class WeighbridgeTransaction(models.Model):
     voucher_no = fields.Char(string="Voucher No", required=True, readonly=True, copy=False, default='New')
     vehicle_no = fields.Char(string="Vehicle No", required=True)
     
-    # Driver fields
+    # Driver - Many2one relationship
+    driver_id = fields.Many2one('weighbridge.driver', string="Driver", help="Select driver")
+    
+    # Driver fields (can be filled from driver_id or entered manually)
     driver_name = fields.Char(string="Driver Name")
     driver_nrc = fields.Char(string="NRC")
     driver_phone = fields.Char(string="Phone Number")
@@ -24,12 +27,31 @@ class WeighbridgeTransaction(models.Model):
     
     deliver_to = fields.Text(string="Deliver To")
     
+    # Transaction Type - Many2one relationship
+    # Note: required=False initially to avoid initialization issues, validation in create()
+    type_id = fields.Many2one('weighbridge.transaction.type', string="Type", required=False)
+    
+    # Keep type as Selection for backward compatibility during migration
+    # Will be synced with type_id via onchange
     type = fields.Selection([
         ('in', 'In'),
         ('out', 'Out'),
         ('in_out', 'In-Out'),
         ('visit', 'Visit')
-    ], string="Type", required=True, default='in')
+    ], string="Type Code", required=False)
+    
+    @api.model
+    def _default_type_id(self):
+        """Default to 'In' type - safe to call after model initialization"""
+        try:
+            type_record = self.env['weighbridge.transaction.type'].search([('code', '=', 'in')], limit=1)
+            if not type_record:
+                # Fallback: return first active type if 'in' doesn't exist
+                type_record = self.env['weighbridge.transaction.type'].search([('active', '=', True)], limit=1)
+            return type_record.id if type_record else False
+        except Exception:
+            # During module installation, table might not exist yet
+            return False
     
     product_ids = fields.Many2many('product.product', string="Products")
     
@@ -68,14 +90,92 @@ class WeighbridgeTransaction(models.Model):
         if self.partner_id:
             self.company_name = self.partner_id.name
 
+    @api.onchange('driver_id')
+    def _onchange_driver_id(self):
+        """Update driver fields when driver is selected"""
+        if self.driver_id:
+            self.driver_name = self.driver_id.name
+            self.driver_nrc = self.driver_id.nrc
+            self.driver_phone = self.driver_id.phone
+        else:
+            # Clear fields if driver is removed
+            self.driver_name = False
+            self.driver_nrc = False
+            self.driver_phone = False
+
+    @api.onchange('type_id')
+    def _onchange_type_id(self):
+        """Sync type field when type_id is selected"""
+        if self.type_id:
+            self.type = self.type_id.code
+
+    @api.onchange('type')
+    def _onchange_type(self):
+        """Sync type_id when type is selected"""
+        if self.type:
+            type_record = self.env['weighbridge.transaction.type'].search([('code', '=', self.type)], limit=1)
+            if type_record:
+                self.type_id = type_record
+
     @api.model_create_multi
     def create(self, vals_list):
-        """Override create to generate voucher numbers"""
+        """Override create to generate voucher numbers and set default type"""
         for vals in vals_list:
             if vals.get('voucher_no', 'New') == 'New':
                 # Generate voucher number: YYYYMMDDHHMMSS (datetime only)
                 now = datetime.now()
                 vals['voucher_no'] = now.strftime('%Y%m%d%H%M%S')
+            
+            # Set default type_id if not provided (required field)
+            if not vals.get('type_id'):
+                try:
+                    # Try to get default type from context first
+                    if self.env.context.get('default_type_id'):
+                        vals['type_id'] = self.env.context.get('default_type_id')
+                    else:
+                        # Try XML ID reference first (fastest, no DB query)
+                        try:
+                            type_ref = self.env.ref('ocs_weight_master.transaction_type_in', raise_if_not_found=False)
+                            if type_ref:
+                                vals['type_id'] = type_ref.id
+                        except Exception:
+                            pass
+                        
+                        # Fallback to search method
+                        if not vals.get('type_id'):
+                            default_type_id = self._default_type_id()
+                            if default_type_id:
+                                vals['type_id'] = default_type_id
+                except Exception:
+                    # If all else fails, try to get any active type
+                    try:
+                        any_type = self.env['weighbridge.transaction.type'].search([('active', '=', True)], limit=1)
+                        if any_type:
+                            vals['type_id'] = any_type.id
+                    except Exception:
+                        pass
+            
+            # Ensure type_id is set (required field validation)
+            if not vals.get('type_id'):
+                raise ValueError("Transaction type is required. Please select a type.")
+            
+            # Sync type field with type_id
+            if vals.get('type_id') and not vals.get('type'):
+                try:
+                    type_record = self.env['weighbridge.transaction.type'].browse(vals['type_id'])
+                    if type_record.exists():
+                        vals['type'] = type_record.code
+                except Exception:
+                    pass
+            
+            # Sync type_id with type field (if type is provided but type_id is not)
+            if vals.get('type') and not vals.get('type_id'):
+                try:
+                    type_record = self.env['weighbridge.transaction.type'].search([('code', '=', vals['type'])], limit=1)
+                    if type_record:
+                        vals['type_id'] = type_record.id
+                except Exception:
+                    pass
         return super(WeighbridgeTransaction, self).create(vals_list)
 
     def action_fetch_entrance_weight(self):

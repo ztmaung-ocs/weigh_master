@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Driver Form View -->
+    <record id="view_driver_form" model="ir.ui.view">
+        <field name="name">weighbridge.driver.form</field>
+        <field name="model">weighbridge.driver</field>
+        <field name="arch" type="xml">
+            <form string="Driver">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" required="1"/>
+                            <field name="nrc"/>
+                            <field name="phone"/>
+                            <field name="email"/>
+                        </group>
+                        <group>
+                            <field name="license_no"/>
+                            <field name="license_expiry"/>
+                            <field name="partner_id" options="{'no_create': True}"/>
+                            <field name="transaction_count" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="address" placeholder="Enter driver address"/>
+                    </group>
+                    <group>
+                        <field name="notes" placeholder="Enter additional notes"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Driver List View -->
+    <record id="view_driver_list" model="ir.ui.view">
+        <field name="name">weighbridge.driver.list</field>
+        <field name="model">weighbridge.driver</field>
+        <field name="arch" type="xml">
+            <list string="Drivers">
+                <field name="name"/>
+                <field name="nrc"/>
+                <field name="phone"/>
+                <field name="license_no"/>
+                <field name="transaction_count"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Driver Search View -->
+    <record id="view_driver_search" model="ir.ui.view">
+        <field name="name">weighbridge.driver.search</field>
+        <field name="model">weighbridge.driver</field>
+        <field name="arch" type="xml">
+            <search string="Search Drivers">
+                <field name="name"/>
+                <field name="nrc"/>
+                <field name="phone"/>
+                <field name="license_no"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Driver Action -->
+    <record id="action_driver" model="ir.actions.act_window">
+        <field name="name">Drivers</field>
+        <field name="res_model">weighbridge.driver</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+                                       (0, 0, {'view_mode': 'list', 'view_id': ref('view_driver_list')}),
+                                       (0, 0, {'view_mode': 'form', 'view_id': ref('view_driver_form')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first driver!
+            </p>
+            <p>
+                Manage driver information including name, NRC, phone, and license details.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Item -->
+    <menuitem id="menu_driver" name="Drivers"
+              parent="menu_ocs_weight_root" action="action_driver" sequence="30"/>
+</odoo>
+

@@ -5,3 +5,7 @@ access_weight_latest_user,weight.latest user,model_weight_latest,base.group_user
 access_weight_latest_manager,weight.latest manager,model_weight_latest,base.group_system,1,1,1,1
 access_weighbridge_transaction_user,weighbridge.transaction user,model_weighbridge_transaction,base.group_user,1,1,1,0
 access_weighbridge_transaction_manager,weighbridge.transaction manager,model_weighbridge_transaction,base.group_system,1,1,1,1
+access_weighbridge_driver_user,weighbridge.driver user,model_weighbridge_driver,base.group_user,1,1,1,0
+access_weighbridge_driver_manager,weighbridge.driver manager,model_weighbridge_driver,base.group_system,1,1,1,1
+access_weighbridge_transaction_type_user,weighbridge.transaction.type user,model_weighbridge_transaction_type,base.group_user,1,1,1,0
+access_weighbridge_transaction_type_manager,weighbridge.transaction.type manager,model_weighbridge_transaction_type,base.group_system,1,1,1,1

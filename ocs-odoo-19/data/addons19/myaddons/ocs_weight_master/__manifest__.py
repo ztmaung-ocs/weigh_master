@@ -8,7 +8,10 @@
     "depends": ["base", "web", "hr", "product"],
     "data": [
         "data/ir_sequence_data.xml",
+        "data/transaction_type_data.xml",
         "reports/weighbridge_transaction_report.xml",
+        "views/transaction_type_views.xml",
+        "views/driver_views.xml",
         "views/weight_record_views.xml",
         "views/mqtt_latest_views.xml",
         "views/weighbridge_transaction_views.xml",
