@@ -2,7 +2,8 @@ version: '3.7'
 
 services:
   web:
-    image: odoo:19.0
+    build: .
+    
     container_name : ${web_container_name}
     depends_on:
       - db
@@ -13,6 +14,11 @@ services:
       - USER=${db_user}
       - PASSWORD=${db_password}
       - WEB_BASE_URL=http://${web_container_name}:${odoo_port}
+      - MQTT_BROKER=${mqtt_broker}
+      - MQTT_PORT=${mqtt_port}
+      - MQTT_TOPIC=${mqtt_topic}
+      - MQTT_KEEPALIVE=${mqtt_keepalive}
+      
 
     volumes:
       - odoo_data:/var/lib/odoo

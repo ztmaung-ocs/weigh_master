@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import threading
 import time
 from datetime import datetime, timezone
@@ -10,7 +11,7 @@ from odoo import api, SUPERUSER_ID
 
 _logger = logging.getLogger(__name__)
 
-# Defaults; can be overridden with system parameters
+# Defaults; can be overridden with environment variables, system parameters, or defaults
 DEFAULT_BROKER = "192.168.101.85"
 DEFAULT_PORT = 1883
 DEFAULT_TOPIC = "weight/master"
@@ -31,11 +32,31 @@ class MqttWeightService:
 
     @classmethod
     def _get_params(cls, env):
+        """Get MQTT parameters from environment variables, system parameters, or defaults.
+        Priority: Environment variables > System parameters > Defaults
+        """
         ICP = env["ir.config_parameter"].sudo()
-        broker = ICP.get_param("ocs_weight_master.mqtt_broker", DEFAULT_BROKER)
-        port = int(ICP.get_param("ocs_weight_master.mqtt_port", DEFAULT_PORT))
-        topic = ICP.get_param("ocs_weight_master.mqtt_topic", DEFAULT_TOPIC)
-        keepalive = int(ICP.get_param("ocs_weight_master.mqtt_keepalive", DEFAULT_KEEPALIVE))
+        
+        # Check environment variables first (from docker-compose)
+        broker = os.getenv("MQTT_BROKER") or ICP.get_param("ocs_weight_master.mqtt_broker", DEFAULT_BROKER)
+        port_str = os.getenv("MQTT_PORT") or ICP.get_param("ocs_weight_master.mqtt_port", str(DEFAULT_PORT))
+        topic = os.getenv("MQTT_TOPIC") or ICP.get_param("ocs_weight_master.mqtt_topic", DEFAULT_TOPIC)
+        keepalive_str = os.getenv("MQTT_KEEPALIVE") or ICP.get_param("ocs_weight_master.mqtt_keepalive", str(DEFAULT_KEEPALIVE))
+        
+        try:
+            port = int(port_str)
+        except (ValueError, TypeError):
+            port = DEFAULT_PORT
+            
+        try:
+            keepalive = int(keepalive_str)
+        except (ValueError, TypeError):
+            keepalive = DEFAULT_KEEPALIVE
+        
+        _logger.info("MQTT Configuration - Broker: %s, Port: %s, Topic: %s (from %s)", 
+                    broker, port, topic, 
+                    "environment" if os.getenv("MQTT_BROKER") else "config_parameter")
+        
         return broker, port, topic, keepalive
 
     @classmethod
