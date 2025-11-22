@@ -1,0 +1,67 @@
+version: '3.7'
+
+services:
+  web:
+    image: odoo:19.0
+    container_name : ${web_container_name}
+    depends_on:
+      - db
+    ports:
+      - "${odoo_port}:8069"
+    environment:
+      - HOST=db
+      - USER=${db_user}
+      - PASSWORD=${db_password}
+      - WEB_BASE_URL=http://${web_container_name}:${odoo_port}
+
+    volumes:
+      - odoo_data:/var/lib/odoo
+      - ./data/addons19:/mnt/extra-addons
+      - ./data/config:/etc/odoo
+      - ./data/fonts/padauk:/usr/share/fonts/truetype/padauk
+      - ./data/fonts/OCSone.ttf:/usr/share/fonts/truetype/OCSone.ttf
+    networks:
+      - odoo_network
+
+  db:
+    image: postgres:15
+    container_name : ${db_container_name}
+    ports:
+      - "${db_port}:5432"
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=${pg_user}
+      - POSTGRES_PASSWORD=${pg_password}
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+    networks:
+      - odoo_network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: ${pgadmin_container_name}
+    depends_on:
+      - db
+    ports:
+      - "${pgadmin_port}:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${pgadmin_email}
+      - PGADMIN_DEFAULT_PASSWORD=${pgadmin_password}
+    networks:
+      - odoo_network
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+volumes:
+  odoo_data:
+    name: ${web_volume_name}
+  postgresql_data:
+    name: ${db_volume_name}
+  pgadmin_data:
+    name: ${pgadmin_data}
+
+networks:
+  odoo_network:
+    name: ${network_name}
+
+

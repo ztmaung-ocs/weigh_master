@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Entrance Form View -->
+    <record id="view_weighbridge_transaction_entrance_form" model="ir.ui.view">
+        <field name="name">weighbridge.transaction.entrance.form</field>
+        <field name="model">weighbridge.transaction</field>
+        <field name="arch" type="xml">
+            <form string="Entrance Form">
+                <header>
+                    <button name="action_fetch_entrance_weight" string="Fetch Data" type="object" class="btn-secondary" icon="fa-download"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="voucher_no"/>
+                            <field name="vehicle_no" required="1"/>
+                            <field name="type" widget="radio" options="{'horizontal': true}"/>
+                        </group>
+                        <group>
+                            <field name="entrance_weight"/>
+                            <field name="entrance_date"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Driver Information">
+                            <group>
+                                <field name="driver_name"/>
+                                <field name="driver_nrc"/>
+                                <field name="driver_phone"/>
+                            </group>
+                        </page>
+                        <page string="Company &amp; Responsible">
+                            <group>
+                                <field name="partner_id" domain="[('is_company', '=', True)]"/>
+                                <field name="company_name"/>
+                                <field name="responsible_id"/>
+                            </group>
+                        </page>
+                        <page string="Delivery &amp; Products">
+                            <group>
+                                <field name="deliver_to" placeholder="Enter delivery address"/>
+                                <field name="product_ids" widget="many2many_tags"/>
+                            </group>
+                        </page>
+                        <page string="Remarks">
+                            <group>
+                                <field name="remark1" placeholder="Enter remark 1"/>
+                                <field name="remark2" placeholder="Enter remark 2"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Exit Form View -->
+    <record id="view_weighbridge_transaction_exit_form" model="ir.ui.view">
+        <field name="name">weighbridge.transaction.exit.form</field>
+        <field name="model">weighbridge.transaction</field>
+        <field name="arch" type="xml">
+            <form string="Exit Form">
+                <header>
+                    <button name="action_fetch_exit_weight" string="Fetch Data" type="object" class="btn-secondary" icon="fa-download"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="voucher_no" readonly="1"/>
+                            <field name="vehicle_no" readonly="1"/>
+                            <field name="type" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="entrance_weight" readonly="1"/>
+                            <field name="entrance_date" readonly="1"/>
+                            <field name="exit_weight"/>
+                            <field name="exit_date"/>
+                            <field name="net_weight" string="Different Weight" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Driver Information">
+                            <group>
+                                <field name="driver_name" readonly="1"/>
+                                <field name="driver_nrc" readonly="1"/>
+                                <field name="driver_phone" readonly="1"/>
+                            </group>
+                        </page>
+                        <page string="Company &amp; Responsible">
+                            <group>
+                                <field name="partner_id" readonly="1"/>
+                                <field name="company_name" readonly="1"/>
+                                <field name="responsible_id" readonly="1"/>
+                            </group>
+                        </page>
+                        <page string="Delivery &amp; Products">
+                            <group>
+                                <field name="deliver_to" readonly="1"/>
+                                <field name="product_ids" readonly="1"/>
+                            </group>
+                        </page>
+                        <page string="Remarks">
+                            <group>
+                                <field name="remark1" readonly="1"/>
+                                <field name="remark2" readonly="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- List View -->
+    <record id="view_weighbridge_transaction_list" model="ir.ui.view">
+        <field name="name">weighbridge.transaction.list</field>
+        <field name="model">weighbridge.transaction</field>
+        <field name="arch" type="xml">
+            <list string="Weighbridge Transactions">
+                <field name="voucher_no"/>
+                <field name="vehicle_no"/>
+                <field name="type"/>
+                <field name="entrance_weight"/>
+                <field name="exit_weight"/>
+                <field name="net_weight"/>
+                <field name="state"/>
+                <field name="create_date"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Entrance Form Action -->
+    <record id="action_weighbridge_transaction_entrance_form" model="ir.actions.act_window">
+        <field name="name">Entrance Form</field>
+        <field name="res_model">weighbridge.transaction</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_weighbridge_transaction_entrance_form"/>
+        <field name="target">current</field>
+        <field name="context">{'default_type': 'in', 'default_state': 'draft'}</field>
+    </record>
+
+    <!-- Exit Form Action -->
+    <record id="action_weighbridge_transaction_exit_form" model="ir.actions.act_window">
+        <field name="name">Exit Form</field>
+        <field name="res_model">weighbridge.transaction</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+                                       (0, 0, {'view_mode': 'list', 'view_id': ref('view_weighbridge_transaction_list')}),
+                                       (0, 0, {'view_mode': 'form', 'view_id': ref('view_weighbridge_transaction_exit_form')})]"/>
+        <field name="domain">[('state', '=', 'entrance')]</field>
+        <field name="context">{'default_state': 'exit'}</field>
+        <field name="target">current</field>
+    </record>
+
+    <!-- All Records Action -->
+    <record id="action_weighbridge_transaction_all" model="ir.actions.act_window">
+        <field name="name">All Records</field>
+        <field name="res_model">weighbridge.transaction</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+                                       (0, 0, {'view_mode': 'list', 'view_id': ref('view_weighbridge_transaction_list')}),
+                                       (0, 0, {'view_mode': 'form', 'view_id': ref('view_weighbridge_transaction_entrance_form')})]"/>
+        <field name="target">current</field>
+    </record>
+
+    <!-- Menu Items -->
+    <menuitem id="menu_weighbridge_entrance_form" name="Entrance Form"
+              parent="menu_ocs_weight_root" action="action_weighbridge_transaction_entrance_form" sequence="40"/>
+    <menuitem id="menu_weighbridge_exit_form" name="Exit Form"
+              parent="menu_ocs_weight_root" action="action_weighbridge_transaction_exit_form" sequence="50"/>
+    <menuitem id="menu_weighbridge_all_records" name="All Records"
+              parent="menu_ocs_weight_root" action="action_weighbridge_transaction_all" sequence="60"/>
+</odoo>
+

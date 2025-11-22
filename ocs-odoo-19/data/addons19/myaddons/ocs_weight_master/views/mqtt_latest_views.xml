@@ -1,0 +1,58 @@
+<odoo>
+  <record id="view_mqtt_latest_form" model="ir.ui.view">
+    <field name="name">weight.latest.form</field>
+    <field name="model">weight.latest</field>
+    <field name="arch" type="xml">
+      <form string="Entrance Form" js_class="mqtt_form" create="0" delete="0">
+        <header>
+          <button name="action_fetch_data" string="Fetch Data" type="object" class="btn-secondary" icon="fa-download"/>
+          <button name="action_save_to_record" string="Save" type="object" class="btn-primary" icon="fa-save"/>
+        </header>
+        <sheet>
+          <group>
+            <field name="input_weight" placeholder="Enter weight or click Fetch Data"/>
+            <field name="timestamp" readonly="1"/>
+          </group>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <record id="action_mqtt_latest_form" model="ir.actions.server">
+    <field name="name">Entrance Form</field>
+    <field name="model_id" ref="model_weight_latest"/>
+    <field name="binding_model_id" ref="model_weight_latest"/>
+    <field name="state">code</field>
+    <field name="code">
+latest = model.get_latest()
+view_id = env.ref('ocs_weight_master.view_mqtt_latest_form').id
+action = {
+    'type': 'ir.actions.act_window',
+    'name': 'Entrance Form',
+    'res_model': 'weight.latest',
+    'res_id': latest.id,
+    'view_mode': 'form',
+    'view_id': view_id,
+    'target': 'current',
+    'context': {'create': False},
+}
+    </field>
+  </record>
+
+  <record id="action_mqtt_latest_form_window" model="ir.actions.act_window">
+    <field name="name">Entrance Form</field>
+    <field name="res_model">weight.latest</field>
+    <field name="view_mode">form</field>
+    <field name="view_id" ref="view_mqtt_latest_form"/>
+    <field name="target">current</field>
+    <field name="context">{'create': False}</field>
+    <field name="help" type="html">
+      <p class="o_view_nocontent_smiling_face">
+        Latest MQTT weight data will appear here and refresh automatically every 2 seconds.
+        Click "Save" to save the current weight to records.
+      </p>
+    </field>
+  </record>
+
+</odoo>
+

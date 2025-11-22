@@ -1,0 +1,73 @@
+<odoo>
+  <record id="view_weight_record_list" model="ir.ui.view">
+    <field name="name">weight.record.list</field>
+    <field name="model">weight.record</field>
+    <field name="arch" type="xml">
+      <list string="Incoming Weights">
+        <field name="weight"/>
+        <field name="source"/>
+        <field name="create_date"/>
+      </list>
+    </field>
+  </record>
+
+  <record id="view_weight_record_form" model="ir.ui.view">
+    <field name="name">weight.record.form</field>
+    <field name="model">weight.record</field>
+    <field name="arch" type="xml">
+      <form string="Weight Record">
+        <sheet>
+          <group>
+            <field name="weight"/>
+            <field name="source"/>
+            <field name="create_date"/>
+          </group>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <record id="view_weight_record_mqtt_form" model="ir.ui.view">
+    <field name="name">weight.record.mqtt.form</field>
+    <field name="model">weight.record</field>
+    <field name="arch" type="xml">
+      <form string="MQTT Weight Record" js_class="mqtt_form">
+        <sheet>
+          <group>
+            <field name="weight"/>
+            <field name="create_date"/>
+          </group>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <record id="action_weight_record" model="ir.actions.act_window">
+    <field name="name">Incoming Weights</field>
+    <field name="res_model">weight.record</field>
+    <field name="view_mode">list,form</field>
+    <field name="help" type="html">
+      <p class="o_view_nocontent_smiling_face">
+        Weights will appear here when MQTT publishes to <b>weight/master</b>.
+      </p>
+    </field>
+  </record>
+
+  <record id="action_weight_record_mqtt" model="ir.actions.act_window">
+    <field name="name">MQTT Weights</field>
+    <field name="res_model">weight.record</field>
+    <field name="view_mode">list,form</field>
+    <field name="domain">[('source', '=', 'mqtt')]</field>
+    <field name="context">{'default_source': 'mqtt', 'search_default_mqtt': 1}</field>
+    <field name="view_ids" eval="[(5, 0, 0),
+                                   (0, 0, {'view_mode': 'list', 'view_id': ref('view_weight_record_list')}),
+                                   (0, 0, {'view_mode': 'form', 'view_id': ref('view_weight_record_mqtt_form')})]"/>
+    <field name="help" type="html">
+      <p class="o_view_nocontent_smiling_face">
+        Only MQTT weight data will appear here.
+      </p>
+    </field>
+  </record>
+
+  <menuitem id="menu_ocs_weight_root" name="OCS Weight Master" sequence="10"/>
+</odoo>

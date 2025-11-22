@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_weight_record_user,weight.record user,model_weight_record,base.group_user,1,0,0,0
+access_weight_record_manager,weight.record manager,model_weight_record,base.group_system,1,1,1,1
+access_weight_latest_user,weight.latest user,model_weight_latest,base.group_user,1,0,0,0
+access_weight_latest_manager,weight.latest manager,model_weight_latest,base.group_system,1,1,1,1
+access_weighbridge_transaction_user,weighbridge.transaction user,model_weighbridge_transaction,base.group_user,1,1,1,0
+access_weighbridge_transaction_manager,weighbridge.transaction manager,model_weighbridge_transaction,base.group_system,1,1,1,1
