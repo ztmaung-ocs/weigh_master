@@ -1,0 +1,23 @@
+[
+    {
+        "id": "8ad9b32b74607539",
+        "type": "function",
+        "z": "6e8273ce4ce52b85",
+        "name": "XK3190-D10",
+        "func": "// XK3190-D10 continuous mode 12-byte frame parser\n// msg.payload must be a Buffer of length 12\n\nlet buf = msg.payload;\n\n// Convert string to Buffer if needed\nif (typeof buf === \"string\") {\n    buf = Buffer.from(buf, \"binary\");\n}\n\n// Validate buffer\nif (!Buffer.isBuffer(buf) || buf.length !== 12) {\n    node.warn(\"Invalid length: \" + buf.length);\n    return null;\n}\n\n// STX (0x02) and ETX (0x03)\nif (buf[0] !== 0x02 || buf[11] !== 0x03) {\n    node.warn(\"Bad STX/ETX: \" + buf.toString(\"hex\"));\n    return null;\n}\n\n// Sign: '+' or '-'\nlet signChar = String.fromCharCode(buf[1]);\nlet sign = (signChar === '-') ? '-' : '';\n\n// 6 ASCII digits\nlet digits = \"\";\nfor (let i = 2; i <= 7; i++) {\n    let c = buf[i];\n    if (c < 0x30 || c > 0x39) {\n        node.warn(\"Non-digit: \" + buf.toString(\"hex\"));\n        return null;\n    }\n    digits += String.fromCharCode(c);\n}\n\n// Decimal point (ASCII '0'..'4')\nlet dp = buf[8] - 0x30;\nif (dp < 0 || dp > 4) dp = 0;\n\n// Insert decimal from right\nif (dp > 0 && dp < digits.length) {\n    let pos = digits.length - dp;\n    digits = digits.slice(0, pos) + \".\" + digits.slice(pos);\n}\n\nlet weightStr = sign + digits;\nlet weightNum = parseFloat(weightStr);\n\n// OPTIONAL: XOR validate (recommended)\nlet xor = 0x00;\nfor (let i = 1; i <= 8; i++) xor ^= buf[i];   // XOR bytes 1..8\nlet xorHi = buf[9];\nlet xorLo = buf[10];\n\n// Convert ASCII nibble to number\nfunction nibble(b) {\n    if (b >= 0x30 && b <= 0x39) return b - 0x30;\n    if (b >= 0x41 && b <= 0x46) return b - 0x37; // 'A'..'F'\n    return null;\n}\n\nlet hi = nibble(xorHi);\nlet lo = nibble(xorLo);\n\nif (hi === null || lo === null || ((hi << 4) | lo) !== xor) {\n    node.warn(\"XOR mismatch: \" + buf.toString(\"hex\"));\n    return null;\n}\n\n// Final output\nmsg.payload = {\n    weight: weightNum,\n    raw: weightStr,\n    hex: buf.toString(\"hex\"),\n    timestamp: Date.now()\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 610,
+        "y": 220,
+        "wires": [
+            [
+                "6b3471d9fac0dadb",
+                "14c9a6c39e47aa74"
+            ]
+        ]
+    }
+]
