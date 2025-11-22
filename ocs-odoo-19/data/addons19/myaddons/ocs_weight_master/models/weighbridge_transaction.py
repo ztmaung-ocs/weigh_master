@@ -154,8 +154,19 @@ class WeighbridgeTransaction(models.Model):
             'target': 'current',
         }
 
-    def action_print_pos(self):
-        """Open report in new window for POS printing"""
+    def action_print_entrance(self):
+        """Open entrance form report in new window for POS printing"""
+        self.ensure_one()
+        report = self.env.ref('ocs_weight_master.action_report_weighbridge_transaction_entrance')
+        url = f'/report/html/{report.report_name}/{self.id}'
+        return {
+            'type': 'ir.actions.act_url',
+            'url': url,
+            'target': 'new',
+        }
+
+    def action_print_all_data(self):
+        """Open full transaction report in new window for POS printing"""
         self.ensure_one()
         report = self.env.ref('ocs_weight_master.action_report_weighbridge_transaction')
         url = f'/report/html/{report.report_name}/{self.id}'
