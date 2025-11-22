@@ -8,7 +8,7 @@
             <form string="Entrance Form">
                 <header>
                     <button name="action_fetch_entrance_weight" string="Fetch Data" type="object" class="btn-secondary" icon="fa-download"/>
-                    <button name="%(action_report_weighbridge_transaction)d" string="Print" type="action" class="btn-primary" icon="fa-print"/>
+                    <button name="action_print_pos" string="Print" type="object" class="btn-primary" icon="fa-print"/>
                 </header>
                 <sheet>
                     <group>
@@ -63,7 +63,7 @@
             <form string="Exit Form">
                 <header>
                     <button name="action_fetch_exit_weight" string="Fetch Data" type="object" class="btn-secondary" icon="fa-download"/>
-                    <button name="%(action_report_weighbridge_transaction)d" string="Print" type="action" class="btn-primary" icon="fa-print"/>
+                    <button name="action_print_pos" string="Print" type="object" class="btn-primary" icon="fa-print"/>
                 </header>
                 <sheet>
                     <group>
@@ -120,7 +120,7 @@
         <field name="arch" type="xml">
             <form string="Weighbridge Transaction" create="0">
                 <header>
-                    <button name="%(action_report_weighbridge_transaction)d" string="Print" type="action" class="btn-primary" icon="fa-print"/>
+                    <button name="action_print_pos" string="Print" type="object" class="btn-primary" icon="fa-print"/>
                 </header>
                 <sheet>
                     <group>
