@@ -16,6 +16,8 @@ DEFAULT_BROKER = "192.168.101.85"
 DEFAULT_PORT = 1883
 DEFAULT_TOPIC = "weight/master"
 DEFAULT_KEEPALIVE = 60
+DEFAULT_USERNAME = None
+DEFAULT_PASSWORD = None
 
 
 class MqttWeightService:
@@ -42,6 +44,8 @@ class MqttWeightService:
         port_str = os.getenv("MQTT_PORT") or ICP.get_param("ocs_weight_master.mqtt_port", str(DEFAULT_PORT))
         topic = os.getenv("MQTT_TOPIC") or ICP.get_param("ocs_weight_master.mqtt_topic", DEFAULT_TOPIC)
         keepalive_str = os.getenv("MQTT_KEEPALIVE") or ICP.get_param("ocs_weight_master.mqtt_keepalive", str(DEFAULT_KEEPALIVE))
+        username = os.getenv("MQTT_USERNAME") or ICP.get_param("ocs_weight_master.mqtt_username", DEFAULT_USERNAME)
+        password = os.getenv("MQTT_PASSWORD") or ICP.get_param("ocs_weight_master.mqtt_password", DEFAULT_PASSWORD)
         
         try:
             port = int(port_str)
@@ -53,11 +57,12 @@ class MqttWeightService:
         except (ValueError, TypeError):
             keepalive = DEFAULT_KEEPALIVE
         
-        _logger.info("MQTT Configuration - Broker: %s, Port: %s, Topic: %s (from %s)", 
-                    broker, port, topic, 
+        auth_info = f"with user '{username}'" if username else "without authentication"
+        _logger.info("MQTT Configuration - Broker: %s, Port: %s, Topic: %s, %s (from %s)", 
+                    broker, port, topic, auth_info,
                     "environment" if os.getenv("MQTT_BROKER") else "config_parameter")
         
-        return broker, port, topic, keepalive
+        return broker, port, topic, keepalive, username, password
 
     @classmethod
     def start(cls, env):
@@ -65,7 +70,7 @@ class MqttWeightService:
             _logger.info("MQTT listener already running.")
             return
 
-        broker, port, topic, keepalive = cls._get_params(env)
+        broker, port, topic, keepalive, username, password = cls._get_params(env)
         cls._stop_flag = False
 
         def _run():
@@ -73,6 +78,10 @@ class MqttWeightService:
 
             client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
             cls._client = client
+
+            # Set username and password if provided
+            if username:
+                client.username_pw_set(username, password)
 
             def on_connect(client, userdata, flags, reason_code, properties=None):
                 if reason_code == 0:
